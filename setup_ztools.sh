@@ -5,9 +5,9 @@
 # Before running this script, you MUST setup the following environment
 # variables. Consider adding them to your bashrc for persistence.
 #
-export PATH=$PATH:/usr/local/go/bin
-export GOPATH=$HOME/go-code
-export PATH=$PATH:$GOPATH/bin
+#export PATH=$PATH:/usr/local/go/bin
+#export GOPATH=$HOME/go-code
+#export PATH=$PATH:$GOPATH/bin
 
 # Additionally you may wish to configure the following env vars if you 
 # wish to use a specific golang version. If these vars are not set, the
