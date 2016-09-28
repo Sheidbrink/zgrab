@@ -19,7 +19,7 @@ if [ -z "$GO_ARCH" ]; then GO_ARCH="amd64"; fi
 GO_DISTRO="go${GO_VERSION}.${GO_OS}-${GO_ARCH}.tar.gz"
 
 printf ">>>SETUP>>> Installing dependencies via apt...\n\n"
-sudo apt-get -y install git build-essential cmake libgmp3-dev libpcap-dev gengetopt byacc flex libjson0-dev libunistring-dev
+sudo apt-get -y install git build-essential cmake libgmp3-dev libpcap-dev gengetopt byacc flex libjson0-dev libunistring-dev pkg-config
 rc=$?; if [[ $rc != 0 ]]; then
 printf "\n\n>>>SETUP>>> Installing dependecies failed!\n" 
 exit 
