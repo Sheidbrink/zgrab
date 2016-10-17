@@ -108,7 +108,7 @@ def parse_args():
 
 # generate the bash commands for zmap, ztee and zgrab
 def generate_cmd_strings(args):
-	zmap_cmd = ["sudo", "zmap"]
+	zmap_cmd = ["sudo", "zmap", "--ignore-invalid-hosts"]
 	
 	zmap_cmd.append("-p")
 	if args.port:
@@ -173,6 +173,7 @@ def generate_cmd_strings(args):
 
 # execute zmap, ztee and zgrab
 def grab_certs(zmap_cmd, ztee_cmd, zgrab_cmd):
+	print zmap_cmd, ztee_cmd, zgrab_cmd
 	zmap_proc = subprocess.Popen(zmap_cmd,stdout=subprocess.PIPE)
 	ztee_proc = subprocess.Popen(
 		ztee_cmd,
