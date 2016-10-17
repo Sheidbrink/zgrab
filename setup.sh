@@ -23,4 +23,4 @@ cd zgrab
 chmod +x ./setup_ztools.sh
 ./setup_ztools.sh
 wget http://tlsresearch.byu.edu/blacklist.txt
-python zcerts.py -w ips.txt -b blacklist.txt
+python zcerts.py -w hostnames.txt -b blacklist.txt
