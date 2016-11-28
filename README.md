@@ -1,6 +1,5 @@
-# TrustHub/TrustBase
-Server authentication as an operating system service
-
+# X509 Certificate scanning tool
+This is not actually zgrab.  Forgive the repo title.
 ## Setup
 ### zcerts.py
 In order to use zcerts.py, the following tools must be installed
