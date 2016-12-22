@@ -134,7 +134,7 @@ def parse_args():
 
 # generate the bash commands for zmap, ztee and zgrab
 def generate_cmd_strings(args, ip_dom=None):
-    zmap_cmd = ["sudo", "zmap"]
+    zmap_cmd = ["sudo", "zmap", "--ignore-invalid-hosts"]
     
     zmap_cmd.append("-p")
     if args.port:
