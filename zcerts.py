@@ -25,6 +25,8 @@ ZMAP_OUT = ZMAP_OUT_DEFAULT
 ZGRAB_OUT = ZGRAB_OUT_DEFAULT
 ZCERTS_OUT = ZCERTS_OUT_DEFAULT
 
+VERBOSE = False
+
 # setup a robust argument parser
 # NOTE: there is NO error checking here to make sure that domain names aren't 
 # being supplied when the -W or -I flags are being used; if they are the script 
@@ -57,6 +59,12 @@ def parse_args():
         metavar="RATE",
         type=int,
         help="send rate in packets/sec")
+    parser.add_argument(
+        "-t",
+        "--timeout",
+        metavar="TIMEOUT",
+        type=int,
+        help="connection timeout for zgrab in seconds (Default 10)")
     parser.add_argument(
         "-B",
         "--bandwidth",
@@ -116,12 +124,17 @@ def parse_args():
         metavar="LIST_DOMAINS",
         type=str,
         help="filepath for individual domain names to scan")
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="enables verbose output for debugging")
 
     return parser.parse_args()
 
 # generate the bash commands for zmap, ztee and zgrab
 def generate_cmd_strings(args, ip_dom=None):
-    zmap_cmd = ["sudo", "zmap"]
+    zmap_cmd = ["sudo", "zmap", "--ignore-invalid-hosts"]
     
     zmap_cmd.append("-p")
     if args.port:
@@ -182,6 +195,10 @@ def generate_cmd_strings(args, ip_dom=None):
     else:
         zgrab_cmd.append("443")
 
+    if args.timeout is not None:
+        zgrab_cmd.append("--timeout")
+        zgrab_cmd.append(str(args.timeout))
+
     zgrab_cmd.append("--tls")
 
     # if this is a domain-based scan we will default to writing to stdout
@@ -189,6 +206,9 @@ def generate_cmd_strings(args, ip_dom=None):
         zgrab_cmd.append("--output-file=" + ZGRAB_OUT)
 
     cmds = [zmap_cmd, ztee_cmd, zgrab_cmd]
+
+    if VERBOSE:
+        print " | ".join(cmds)
 
     return cmds
 
@@ -316,7 +336,7 @@ def do_batches(args):
             grab_certs_batch(zmap_cmd, ztee_cmd, zgrab_cmd, ip_dom)
 
 def main():
-    global ZMAP_OUT, ZGRAB_OUT, ZCERTS_OUT
+    global ZMAP_OUT, ZGRAB_OUT, ZCERTS_OUT, VERBOSE
 
     args = parse_args()
     import IPython; IPython.embed()
@@ -327,6 +347,9 @@ def main():
         ZGRAB_OUT = args.zgrab_out
     if args.zcerts_out:
         ZCERTS_OUT = args.zcerts_out
+
+    if args.verbose:
+        VERBOSE = True
 
     # remove the output files if they already exist; important as we append to 
     # files in the batch mode
