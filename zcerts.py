@@ -17,6 +17,7 @@ import os
 import time
 from time import asctime
 import csv
+import socket
 
 ZMAP_OUT_DEFAULT = "zmap.out"
 ZGRAB_OUT_DEFAULT = "zgrab.out"
@@ -216,6 +217,7 @@ def generate_cmd_strings(args, ip_dom=None):
 # for a given list of domain names return a dict mapping them to an IP
 def process_domains(domains):
     ip_dom = dict()
+    # import IPython; IPython.embed()
     for dom in domains:
         # skip dom if == "" ?
         try:
@@ -223,7 +225,7 @@ def process_domains(domains):
             if ip not in ip_dom:
                 ip_dom[ip] = []
             ip_dom[ip].append(dom)
-        except:
+        except socket.gaierror:
             print "Failed to resolve domain: %s" % dom
             # we default unresovable domains to 0.0.0.0 as per what the U.Mich
             # folks seem to do
