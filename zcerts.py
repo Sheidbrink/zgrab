@@ -237,6 +237,7 @@ def process_domains(domains):
 
 # execute zmap, ztee and zgrab
 def grab_certs(zmap_cmd, ztee_cmd, zgrab_cmd):
+    import os; print "\n\n >>> *** >>> grab_certs: " + os.getcwd() +"\n\n"
     zmap_proc = subprocess.Popen(zmap_cmd,stdout=subprocess.PIPE)
     ztee_proc = subprocess.Popen(
         ztee_cmd,
@@ -250,16 +251,25 @@ def grab_certs(zmap_cmd, ztee_cmd, zgrab_cmd):
 # TODO: finish this phase; potentially bypass writing zgrab output directly 
 # to file and instead parse as stream and write just certs to file
 def process_certs():
+    import os; print "\n\n >>> *** >>> process_certs: " + os.getcwd() +"\n\n"
     zcerts_out_file = open(ZCERTS_OUT,"a")
     zgrab_out_file = open(ZGRAB_OUT,"r")
 
+    # line_num = 0
     for line in zgrab_out_file:
         line = line.strip()
+        # line_num += 1
         if line == "":
             continue
         data = json.loads(line)
+        # if 'failure_count' in data and len(list(data.keys())) == 13:
+
         transformed_data = {}
+        # import IPython; IPython.embed(); import sys; sys.exit()
+        # try:
         transformed_data['ip'] = data['ip']
+        # except KeyError:
+            # import IPython; IPython.embed(); import sys; sys.exit()
         if "error" in data:
             transformed_data['error'] = True
         else:
@@ -287,6 +297,7 @@ def process_certs():
 # don't need this and tghen remove its creation in the cmd string gen function 
 # as well
 def grab_certs_batch(zmap_cmd, ztee_cmd, zgrab_cmd, ip_dom):
+    import os; print "\n\n >>> *** >>> grab_certs_batch: " + os.getcwd() +"\n\n"
     zmap_proc = subprocess.Popen(zmap_cmd,stdout=subprocess.PIPE)
     # I'm going to do this so that everything is a blocking process and nothing
     # is being processed as a stream; I'll try and optimize this later
@@ -314,11 +325,17 @@ def grab_certs_batch(zmap_cmd, ztee_cmd, zgrab_cmd, ip_dom):
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE)
     zgrab_out,zgrab_err = zgrab_proc.communicate(zgrab_in)
+    # remove the summary dict from output
+    l = zgrab_out.split("\n")
+    l.pop(-2)
+    zgrab_out = "\n".join(l)
+    # import IPython; IPython.embed(); import sys; sys.exit()
     with open(ZGRAB_OUT,"a") as zgrab_out_file:
         zgrab_out_file.write(zgrab_out)
 
 # perform scans in batches when dealing with domain names
 def do_batches(args):
+    # import os; print "\n\n >>> *** >>> do_batches: " + os.getcwd() +"\n\n"
     # open the file of domains to scan
     if not os.path.exists(args.list_domains):
         raise IOError("Path provided for list of domains does not exist")
