@@ -209,7 +209,7 @@ def generate_cmd_strings(args, ip_dom=None):
 
     if VERBOSE:
         # import IPython; IPython.embed()
-        print " | ".join(cmds)
+        print " | ".join([" ".join(cmd) for cmd in cmds])
 
     return cmds
 
