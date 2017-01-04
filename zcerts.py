@@ -165,8 +165,8 @@ def generate_cmd_strings(args, ip_dom=None):
     zmap_cmd.append("-o");
     zmap_cmd.append("-");
 
-    if args.hosts:
-        for host in args.hosts:
+    if args.in_line:
+        for host in args.in_line:
             zmap_cmd.append(host)
     elif args.whitelist:
         if not os.path.exists(args.whitelist):
@@ -208,6 +208,7 @@ def generate_cmd_strings(args, ip_dom=None):
     cmds = [zmap_cmd, ztee_cmd, zgrab_cmd]
 
     if VERBOSE:
+        # import IPython; IPython.embed()
         print " | ".join(cmds)
 
     return cmds
@@ -290,14 +291,21 @@ def grab_certs_batch(zmap_cmd, ztee_cmd, zgrab_cmd, ip_dom):
     # TODO: make this work as a stream
     zmap_out, zmap_err = zmap_proc.communicate()
     zmap_out = zmap_out.split("\n")
+    # import IPython; IPython.embed()
     zgrab_in = []
+    count = 0
     for ip in zmap_out:
         ip = ip.strip()
         # what to do if ip == ""? 
         # does ignoring this use-case cause any problems?
+        if ip == '':
+            continue
+        count += 1
         for dom in ip_dom[ip]:
             pair = ip + "," + dom
             zgrab_in.append(pair)
+    if count == 0:
+        raise ValueError("No zmap output!")
     zgrab_in = "\n".join(zgrab_in)
     zgrab_proc = subprocess.Popen(
         zgrab_cmd,
@@ -339,7 +347,7 @@ def main():
     global ZMAP_OUT, ZGRAB_OUT, ZCERTS_OUT, VERBOSE
 
     args = parse_args()
-    import IPython; IPython.embed()
+    # import IPython; IPython.embed()
 
     if args.zmap_out:
         ZMAP_OUT = args.zmap_out
