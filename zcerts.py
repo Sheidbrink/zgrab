@@ -20,9 +20,11 @@ import csv
 import socket
 
 ZMAP_OUT_DEFAULT = "zmap.out"
+ZMAP_DOM_OUT_DEFAULT = "zmap_dom.out"
 ZGRAB_OUT_DEFAULT = "zgrab.out"
 ZCERTS_OUT_DEFAULT = "zcerts.out"
 ZMAP_OUT = ZMAP_OUT_DEFAULT
+ZMAP_DOM_OUT = ZMAP_DOM_OUT_DEFAULT
 ZGRAB_OUT = ZGRAB_OUT_DEFAULT
 ZCERTS_OUT = ZCERTS_OUT_DEFAULT
 
@@ -296,6 +298,8 @@ def process_certs():
 # NOTE: this ztee_cmd arg is currently unused; check to make sure we defintely 
 # don't need this and tghen remove its creation in the cmd string gen function 
 # as well
+# NOTE: domains that are unsucessfully scanned by zgrab are just ignored; they do not
+# appear anywhere as an internal failure count; should this behavior be altered?
 def grab_certs_batch(zmap_cmd, ztee_cmd, zgrab_cmd, ip_dom):
     import os; print "\n\n >>> *** >>> grab_certs_batch: " + os.getcwd() +"\n\n"
     zmap_proc = subprocess.Popen(zmap_cmd,stdout=subprocess.PIPE)
@@ -307,6 +311,7 @@ def grab_certs_batch(zmap_cmd, ztee_cmd, zgrab_cmd, ip_dom):
     # import IPython; IPython.embed()
     zgrab_in = []
     count = 0
+    # print zmap_out
     for ip in zmap_out:
         ip = ip.strip()
         # what to do if ip == ""? 
@@ -319,7 +324,9 @@ def grab_certs_batch(zmap_cmd, ztee_cmd, zgrab_cmd, ip_dom):
             zgrab_in.append(pair)
     if count == 0:
         raise ValueError("No zmap output!")
+    zgrab_in.append("")
     zgrab_in = "\n".join(zgrab_in)
+    # print zgrab_in
     zgrab_proc = subprocess.Popen(
         zgrab_cmd,
         stdin=subprocess.PIPE,
@@ -332,6 +339,11 @@ def grab_certs_batch(zmap_cmd, ztee_cmd, zgrab_cmd, ip_dom):
     # import IPython; IPython.embed(); import sys; sys.exit()
     with open(ZGRAB_OUT,"a") as zgrab_out_file:
         zgrab_out_file.write(zgrab_out)
+    zmap_out = "\n".join(zmap_out)
+    with open(ZMAP_OUT,"a") as zmap_out_file:
+        zmap_out_file.write(zmap_out)
+    with open(ZMAP_DOM_OUT,"a") as zmap_dom_out_file:
+        zmap_dom_out_file.write(zgrab_in)
 
 # perform scans in batches when dealing with domain names
 def do_batches(args):
@@ -344,6 +356,7 @@ def do_batches(args):
         domains = []
         # iterate over the file
         for dom in dom_file:
+            # print dom
             dom = dom.strip()
             if dom == "":
                 continue
@@ -351,7 +364,9 @@ def do_batches(args):
             domains.append(dom)
             # perform the scan/grab in batches of 10
             if count % 10 == 0:
+                # print domains
                 ip_dom = process_domains(domains)
+                # print ip_dom
                 zmap_cmd, ztee_cmd, zgrab_cmd = generate_cmd_strings(args, ip_dom=ip_dom)
                 grab_certs_batch(zmap_cmd, ztee_cmd, zgrab_cmd, ip_dom)
                 domains = []
@@ -363,11 +378,14 @@ def do_batches(args):
             grab_certs_batch(zmap_cmd, ztee_cmd, zgrab_cmd, ip_dom)
 
 def main():
-    global ZMAP_OUT, ZGRAB_OUT, ZCERTS_OUT, VERBOSE
+    global ZMAP_OUT, ZMAP_DOM_OUT, ZGRAB_OUT, ZCERTS_OUT, VERBOSE
 
     args = parse_args()
     # import IPython; IPython.embed()
 
+    # currently not allowing users to specify name for the zmap-domain outfile
+    # this file is mainly for debugging purposes and it includes the pairings of
+    # domains and IPs we inject as "spoofed" zmap output to feed to zgrab
     if args.zmap_out:
         ZMAP_OUT = args.zmap_out
     if args.zgrab_out:
@@ -382,6 +400,8 @@ def main():
     # files in the batch mode
     if os.path.exists(ZMAP_OUT):
         os.remove(ZMAP_OUT)
+    if os.path.exists(ZMAP_DOM_OUT):
+        os.remove(ZMAP_DOM_OUT)
     if os.path.exists(ZGRAB_OUT):
         os.remove(ZGRAB_OUT)
     if os.path.exists(ZCERTS_OUT):
